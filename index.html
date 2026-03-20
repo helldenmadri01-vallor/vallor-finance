@@ -662,16 +662,6 @@ html, body {
   <div class="login-title">Vallor</div>
   <div class="login-sub">Gestão financeira da sua agência</div>
   <div class="login-form">
-    <div class="login-tabs">
-      <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
-      <button class="login-tab" onclick="switchLoginTab('signup')">Cadastrar</button>
-    </div>
-    <div id="signupFields" style="display:none;flex-direction:column;gap:0.9rem">
-      <div>
-        <label class="f-label">Nome</label>
-        <input class="f-input" id="authName" placeholder="Seu nome" type="text">
-      </div>
-    </div>
     <div>
       <label class="f-label">E-mail</label>
       <input class="f-input" id="authEmail" placeholder="email@vallor.com.br" type="email">
@@ -810,8 +800,8 @@ html, body {
         <span class="menu-icon">📥</span> Exportar CSV do mês
         <span class="menu-chevron">›</span>
       </button>
-      <button class="menu-item" onclick="showTeam()">
-        <span class="menu-icon">👥</span> Equipe
+      <button class="menu-item" id="teamMenuBtn" onclick="showTeam()" style="display:none">
+        <span class="menu-icon">👥</span> Gerenciar Equipe
         <span class="menu-chevron">›</span>
       </button>
       <button class="menu-item" style="color:var(--red)" onclick="logout()">
@@ -902,6 +892,7 @@ html, body {
 const SUPABASE_URL = 'https://kmprgoqhmgfdxapmnsow.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttcHJnb3FobWdmZHhhcG1uc293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMjAzMTMsImV4cCI6MjA4OTU5NjMxM30.Hk7K2P4q2EXrHZdF2ABkKKDDTYb4vYUs_MVza3xcZ8g';
 
+const ADMIN_EMAIL = 'hellden@vallor.com.br'; // ← troque pelo seu e-mail de admin
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -980,34 +971,15 @@ function goTo(screenId) {
 // ════════════════════════════════════════════
 // AUTH
 // ════════════════════════════════════════════
-let loginMode = 'login';
-function switchLoginTab(mode) {
-  loginMode = mode;
-  document.querySelectorAll('.login-tab').forEach((t,i) => {
-    t.classList.toggle('active', (i===0&&mode==='login')||(i===1&&mode==='signup'));
-  });
-  const sf = document.getElementById('signupFields');
-  sf.style.display = mode === 'signup' ? 'flex' : 'none';
-  document.getElementById('authBtn').textContent = mode === 'login' ? 'Entrar' : 'Criar conta';
-}
 async function handleAuth() {
   const email = document.getElementById('authEmail').value.trim();
   const pass  = document.getElementById('authPass').value;
-  const name  = document.getElementById('authName').value.trim();
   const btn   = document.getElementById('authBtn');
   const msg   = document.getElementById('authMsg');
   if (!email || !pass) { msg.textContent = 'Preencha e-mail e senha.'; return; }
   btn.disabled = true; btn.textContent = '...';
-  let error;
-  if (loginMode === 'login') {
-    const r = await sb.auth.signInWithPassword({ email, password: pass });
-    error = r.error;
-  } else {
-    const r = await sb.auth.signUp({ email, password: pass, options:{ data:{ name } } });
-    error = r.error;
-    if (!error) { msg.textContent = '✓ Verifique seu e-mail para confirmar.'; btn.disabled=false; btn.textContent='Criar conta'; return; }
-  }
-  if (error) { msg.textContent = error.message; btn.disabled=false; btn.textContent = loginMode==='login'?'Entrar':'Criar conta'; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { msg.textContent = 'E-mail ou senha incorretos.'; btn.disabled=false; btn.textContent='Entrar'; }
 }
 async function logout() {
   await sb.auth.signOut();
@@ -1188,7 +1160,10 @@ function renderProfile() {
   document.getElementById('profileAvatar').textContent = initial;
   document.getElementById('profileName').textContent = name;
   document.getElementById('profileEmail').textContent = u.email;
-  document.getElementById('profileRole').textContent = 'membro da equipe';
+  const admin = currentUser.email === ADMIN_EMAIL;
+  document.getElementById('profileRole').textContent = admin ? '👑 administrador' : 'membro da equipe';
+  const teamBtn = document.getElementById('teamMenuBtn');
+  if (teamBtn) teamBtn.style.display = admin ? '' : 'none';
 }
 
 // ════════════════════════════════════════════
@@ -1327,7 +1302,13 @@ function exportCSV() {
   toast('CSV exportado ✓','ok');
 }
 
-function showTeam() { toast('Em breve: gestão de equipe 🔐','ok'); }
+function showTeam() {
+  if (!isAdmin()) { toast('Acesso restrito ao administrador.','err'); return; }
+  openAdminPanel();
+}
+function isAdmin() {
+  return currentUser?.email === ADMIN_EMAIL;
+}
 
 // ════════════════════════════════════════════
 // TOAST
@@ -1380,6 +1361,113 @@ sb.auth.onAuthStateChange(async (event, session) => {
     showScreen('loginScreen');
   }
 })();
+
+// ════════════════════════════════════════════
+// ADMIN PANEL
+// ════════════════════════════════════════════
+function openAdminPanel() {
+  document.getElementById('adm-name').value = '';
+  document.getElementById('adm-email').value = '';
+  document.getElementById('adm-pass').value = '';
+  document.getElementById('admMsg').textContent = '';
+  document.getElementById('adminOverlay').classList.add('open');
+  loadUserList();
+}
+function closeAdminOutside(e) {
+  if (e.target === document.getElementById('adminOverlay'))
+    document.getElementById('adminOverlay').classList.remove('open');
+}
+function toggleAdmPass() {
+  const inp = document.getElementById('adm-pass');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+async function createCollaborator() {
+  const name  = document.getElementById('adm-name').value.trim();
+  const email = document.getElementById('adm-email').value.trim();
+  const pass  = document.getElementById('adm-pass').value;
+  const btn   = document.getElementById('admCreateBtn');
+  const msg   = document.getElementById('admMsg');
+  if (!name || !email || !pass) { msg.textContent = 'Preencha todos os campos.'; return; }
+  if (pass.length < 6) { msg.textContent = 'Senha mínima de 6 caracteres.'; return; }
+  btn.disabled = true; btn.textContent = 'Criando...';
+  msg.textContent = '';
+  // Use Supabase Admin via service role — aqui usamos signUp que cria o usuário
+  // Na versão free do Supabase, o admin pode criar via Auth > Users no dashboard
+  // Aqui fazemos via API pública com auto-confirm desativado
+  const { data, error } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { name } }
+  });
+  btn.disabled = false; btn.textContent = 'Criar acesso';
+  if (error) { msg.style.color = 'var(--red)'; msg.textContent = error.message; return; }
+  msg.style.color = 'var(--green)';
+  msg.textContent = `✓ Acesso criado para ${name}. Informe o e-mail e senha ao colaborador.`;
+  document.getElementById('adm-name').value = '';
+  document.getElementById('adm-email').value = '';
+  document.getElementById('adm-pass').value = '';
+  loadUserList();
+}
+async function loadUserList() {
+  const ul = document.getElementById('userList');
+  ul.innerHTML = '<div style="font-size:0.75rem;color:var(--text3);font-family:var(--mono);text-align:center;padding:1rem">carregando...</div>';
+  // Lista os profiles cadastrados na tabela profiles
+  const { data, error } = await sb.from('profiles').select('id, name, created_at');
+  if (error || !data?.length) {
+    ul.innerHTML = '<div style="font-size:0.75rem;color:var(--text3);font-family:var(--mono);text-align:center;padding:1rem">nenhum usuário encontrado</div>';
+    return;
+  }
+  ul.innerHTML = data.map(u => {
+    const isMe = u.id === currentUser.id;
+    const dt = new Date(u.created_at).toLocaleDateString('pt-BR');
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xs);padding:0.75rem 0.9rem;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.85rem;font-weight:600">${u.name || '—'}${isMe?' <span style=\'font-size:0.6rem;color:var(--accent)\'>você</span>':''}</div>
+        <div style="font-size:0.65rem;color:var(--text3);font-family:var(--mono);margin-top:2px">desde ${dt}</div>
+      </div>
+      <div style="font-size:0.65rem;font-family:var(--mono);color:var(--text3)">${isMe?'👑 admin':'👤 membro'}</div>
+    </div>`;
+  }).join('');
+}
+
 </script>
+
+<!-- ADMIN PANEL: GERENCIAR EQUIPE -->
+<div class="sheet-overlay" id="adminOverlay" onclick="closeAdminOutside(event)">
+  <div class="sheet" style="max-height:88vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">👑 Gerenciar Equipe</div>
+    <div style="padding:0 1.2rem 0.5rem">
+      <div style="font-size:0.7rem;color:var(--text3);font-family:var(--mono);margin-bottom:1rem">
+        Crie acessos para colaboradores. O login é feito com e-mail + senha.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.8rem;margin-bottom:1.2rem">
+        <div>
+          <label class="f-label">Nome do colaborador</label>
+          <input class="f-input" id="adm-name" type="text" placeholder="Ex: João Silva">
+        </div>
+        <div>
+          <label class="f-label">E-mail</label>
+          <input class="f-input" id="adm-email" type="email" placeholder="joao@vallor.com.br">
+        </div>
+        <div>
+          <label class="f-label">Senha inicial</label>
+          <div style="position:relative">
+            <input class="f-input" id="adm-pass" type="password" placeholder="mínimo 6 caracteres">
+            <button onclick="toggleAdmPass()" style="position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.85rem" id="admPassToggle">👁</button>
+          </div>
+        </div>
+        <button class="btn-submit" onclick="createCollaborator()" id="admCreateBtn">Criar acesso</button>
+        <div id="admMsg" style="text-align:center;font-size:0.72rem;color:var(--text3);font-family:var(--mono)"></div>
+      </div>
+      <div class="section-hd" style="padding:0 0 0.5rem"><h2>Usuários cadastrados</h2></div>
+      <div id="userList" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">
+        <div style="font-size:0.75rem;color:var(--text3);font-family:var(--mono);text-align:center;padding:1rem">
+          carregando...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
