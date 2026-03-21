@@ -346,10 +346,66 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
+<div class="screen" id="clientsScreen">
+  <div class="safe-top"></div>
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Clientes</div>
+      <div class="topbar-sub" id="clientsSub">—</div>
+    </div>
+    <div style="display:flex;gap:.4rem;align-items:center">
+      <input id="cSearch" type="text" placeholder="buscar..." oninput="renderClients()"
+        style="background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:.28rem .6rem;font-family:var(--font);font-size:.72rem;color:var(--text);outline:none;width:90px">
+      <button onclick="openNewClient()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;width:30px;height:30px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+    </div>
+  </div>
+  <div style="padding: 0 1.1rem .6rem; display: flex; flex-direction: column; gap: .5rem">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: .5rem">
+      <select class="f-in" id="cNicheFilter" onchange="renderClients()" style="font-size:.7rem; padding:.4rem; background:var(--bg2)">
+        <option value="todos">Todos os nichos</option>
+        <option value="dentista">Dentista</option><option value="optica">Óptica</option>
+        <option value="imoveis">Imóveis</option><option value="turismo">Turismo</option>
+        <option value="seguro">Seguro</option><option value="outros">Outros</option>
+      </select>
+      <select class="f-in" id="cOriginFilter" onchange="renderClients()" style="font-size:.7rem; padding:.4rem; background:var(--bg2)">
+        <option value="todos">Todas origens</option>
+        <option value="direto">Direto (Ads/Org)</option>
+        <option value="indicacao">Indicação</option>
+      </select>
+    </div>
+  </div>
+  <div class="chips" id="clientChips"></div>
+  <div class="scroll">
+    <div id="clientAlerts" style="display:none"></div>
+    <div class="entry-list" id="clientList"></div>
+    <div class="empty hidden" id="clientEmpty"><div class="empty-icon">👥</div><div class="empty-text">nenhum cliente encontrado</div></div>
+  </div>
+</div>
+
+<!-- GOALS -->
+<div class="screen" id="goalsScreen">
+  <div class="safe-top"></div>
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Metas</div>
+      <div class="topbar-sub" id="goalsMth">—</div>
+    </div>
+    <div style="display:flex;gap:.4rem">
+      <button class="mth-btn" onclick="openMthModal()">mês</button>
+      <button onclick="openOv('goalOv')" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:.28rem .65rem;font-family:var(--font);font-size:.72rem;font-weight:600;cursor:pointer">Editar</button>
+    </div>
+  </div>
+  <div class="scroll">
+    <div style="padding:.5rem 1.1rem;display:flex;flex-direction:column;gap:.5rem" id="goalsList"></div>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav class="nav" id="bottomNav" style="display:none">
   <button class="nav-btn on" data-s="homeScreen" onclick="goTo('homeScreen')"><span class="nav-icon">◈</span><span class="nav-lbl">Home</span></button>
   <button class="nav-btn" data-s="listScreen" onclick="goTo('listScreen')"><span class="nav-icon">≡</span><span class="nav-lbl">Lista</span></button>
+  <button class="nav-btn" data-s="clientsScreen" onclick="goTo('clientsScreen')"><span class="nav-icon">👥</span><span class="nav-lbl">Clientes</span></button>
+  <button class="nav-btn" data-s="goalsScreen" onclick="goTo('goalsScreen')"><span class="nav-icon">🎯</span><span class="nav-lbl">Metas</span></button>
   <button class="nav-btn" data-s="analyticsScreen" onclick="goTo('analyticsScreen')"><span class="nav-icon">↗</span><span class="nav-lbl">Análise</span></button>
   <button class="nav-btn" data-s="profileScreen" onclick="goTo('profileScreen')"><span class="nav-icon">◉</span><span class="nav-lbl">Conta</span></button>
 </nav>
@@ -444,6 +500,87 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
+<!-- CLIENT MODAL -->
+<div class="overlay" id="clientOv" onclick="closeOvOut(event,'clientOv')">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-hd"><span class="sh-title">Dados do Cliente</span><button class="sh-close" onclick="closeOv('clientOv')">✕</button></div>
+    <div class="form-pad">
+      <div><label class="f-lbl">Nome / Razão Social</label><input class="f-in" id="cName" type="text" placeholder="Nome do cliente"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div><label class="f-lbl">WhatsApp</label><input class="f-in" id="cPhone" type="tel" placeholder="(00) 00000-0000"></div>
+        <div><label class="f-lbl">Nicho</label>
+          <select class="f-in" id="cNiche">
+            <option value="dentista">Dentista</option><option value="optica">Óptica</option>
+            <option value="imoveis">Imóveis</option><option value="turismo">Turismo</option>
+            <option value="seguro">Seguro</option><option value="outros" selected>Outros</option>
+          </select>
+        </div>
+      </div>
+      <div><label class="f-lbl">E-mail de contato</label><input class="f-in" id="cEmail" type="email" placeholder="cliente@email.com"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div><label class="f-lbl">Início Contrato</label><input class="f-in" id="cStart" type="date"></div>
+        <div><label class="f-lbl">Vencimento</label><input class="f-in" id="cEnd" type="date"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:.6rem">
+        <div><label class="f-lbl">Valor Contrato</label><input class="f-in" id="cValue" type="number" placeholder="0,00" step="0.01"></div>
+        <div><label class="f-lbl">Forma Pagamento</label>
+          <select class="f-in" id="cPayMethod">
+            <option value="pix">PIX</option><option value="credito">C. Crédito</option>
+            <option value="debito">C. Débito</option><option value="boleto">Boleto</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div><label class="f-lbl">Tipo Cobrança</label>
+          <select class="f-in" id="cPayType" onchange="document.getElementById('cInstallRow').style.display=this.value==='parcelado'?'':'none'">
+            <option value="avista">À vista</option><option value="parcelado">Parcelado</option>
+          </select>
+        </div>
+        <div id="cInstallRow" style="display:none"><label class="f-lbl">Parcelas</label><input class="f-in" id="cInstall" type="number" value="1" min="1"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div><label class="f-lbl">Status</label>
+          <select class="f-in" id="cStatus">
+            <option value="ativo">Ativo</option><option value="renovando">Renovando</option><option value="inativo">Inativo</option>
+          </select>
+        </div>
+        <div><label class="f-lbl">Origem</label>
+          <select class="f-in" id="cOrigin">
+            <option value="direto">Direto (Ads/Org)</option><option value="indicacao">Indicação</option>
+          </select>
+        </div>
+      </div>
+      <div><label class="f-lbl">Observações</label><input class="f-in" id="cNotes" type="text" placeholder="Opcional..."></div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn-p" id="cSaveBtn" onclick="saveClient()" style="flex:2">Salvar cliente</button>
+        <button class="btn-p" onclick="if(editingClientId) deleteClient(editingClientId)" style="flex:1;background:var(--bg3);color:var(--red)">Excluir</button>
+      </div>
+    </div>
+    <div style="height:.5rem"></div>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="overlay" id="goalOv" onclick="closeOvOut(event,'goalOv')">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-hd"><span class="sh-title">Definir Metas do Mês</span><button class="sh-close" onclick="closeOv('goalOv')">✕</button></div>
+    <div class="form-pad">
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:.6rem">
+        <div><label class="f-lbl">Receita Alvo (R$)</label><input class="f-in" id="gRevenue" type="number" placeholder="0,00" step="100"></div>
+        <div><label class="f-lbl">Novos Clientes</label><input class="f-in" id="gClients" type="number" placeholder="0"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+        <div><label class="f-lbl">Renovações</label><input class="f-in" id="gRenewals" type="number" placeholder="0"></div>
+        <div><label class="f-lbl">Indicações</label><input class="f-in" id="gReferrals" type="number" placeholder="0"></div>
+      </div>
+      <button class="btn-p" id="gSaveBtn" onclick="saveGoal()">Salvar metas</button>
+    </div>
+    <div style="height:.5rem"></div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -484,6 +621,7 @@ const RECUR_L = {once:'Único',monthly:'Mensal',annual:'Anual'};
 // STATE
 // ══════════════════════════════════════
 let user=null, entries=[], curMonth=thisMonth();
+let clients=[], goals=[], clientFilter='ativo', editingClientId=null;
 let listFilter='todos', eType='d', eCat='ferramentas', eRecur='once';
 let chartEvol=null, chartBar=null, chartMarg=null;
 // Settings (localStorage)
@@ -512,6 +650,17 @@ function daysUntil(ds){const t=new Date();t.setHours(0,0,0,0);const du=new Date(
 function mEntries(ym){return entries.filter(e=>e.date&&e.date.startsWith(ym))}
 function sum(arr){return arr.reduce((s,e)=>s+Number(e.amount),0)}
 
+// Atalhos úteis para ações rápidas
+function openWa(c){
+  if(!c.phone) return toast('Sem WhatsApp','err');
+  const clean = c.phone.replace(/\D/g,'');
+  window.open(`https://wa.me/${clean}`,'_blank');
+}
+function openMail(c){
+  if(!c.email) return toast('Sem E-mail','err');
+  window.open(`mailto:${c.email}`,'_blank');
+}
+
 // ══════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════
@@ -534,9 +683,403 @@ async function doLogout(){
 // ══════════════════════════════════════
 // DATA
 // ══════════════════════════════════════
+async function ensureSchema(){
+  try {
+    // Check recurrence column
+    const { error: eRecur } = await sb.from('entries').select('recurrence').limit(1);
+    if (eRecur) {
+      console.log('Migração: Adicionando coluna recurrence...');
+      await sb.rpc('exec', { query: `ALTER TABLE public.entries ADD COLUMN IF NOT EXISTS recurrence text NOT NULL DEFAULT 'once'` });
+    }
+
+    // Check clients table
+    const { error: eClients } = await sb.from('clients').select('id').limit(1);
+    if (eClients) {
+      console.log('Migração: Criando tabela clients...');
+      const sqlClients = `CREATE TABLE IF NOT EXISTS public.clients (
+        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+        user_id uuid REFERENCES auth.users(id),
+        name text NOT NULL,
+        phone text,
+        email text,
+        niche text,
+        contract_start date,
+        contract_end date,
+        contract_value numeric,
+        payment_type text,
+        payment_method text,
+        installments int DEFAULT 1,
+        status text DEFAULT 'ativo',
+        origin text,
+        notes text,
+        created_at timestamptz DEFAULT now()
+      );`;
+      await sb.rpc('exec', { query: sqlClients });
+    }
+
+    // Check goals table
+    const { error: eGoals } = await sb.from('goals').select('id').limit(1);
+    if (eGoals) {
+      console.log('Migração: Criando tabela goals...');
+      const sqlGoals = `CREATE TABLE IF NOT EXISTS public.goals (
+        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+        user_id uuid REFERENCES auth.users(id),
+        month text NOT NULL,
+        goal_new_clients int DEFAULT 0,
+        goal_revenue numeric DEFAULT 0,
+        goal_renewals int DEFAULT 0,
+        goal_referrals int DEFAULT 0,
+        created_at timestamptz DEFAULT now()
+      );`;
+      await sb.rpc('exec', { query: sqlGoals });
+    }
+  } catch(e) {
+    console.error('Erro na migração:', e);
+  }
+}
+
 async function loadEntries(){
   const{data,error}=await sb.from('entries').select('*').order('date',{ascending:false});
   if(!error) entries=data||[];
+}
+
+// Carrega a lista de clientes do Supabase ordenados por nome
+async function loadClients() {
+  const { data } = await sb.from('clients').select('*').order('name');
+  clients = data || [];
+}
+
+// Carrega as metas mensais do Supabase
+async function loadGoals() {
+  const { data } = await sb.from('goals').select('*');
+  goals = data || [];
+}
+
+// Calcula o MRR (Receita Recorrente Mensal) considerando amortização de contratos à vista
+function getMRR() {
+  return clients
+    .filter(c => c.status === 'ativo')
+    .reduce((s, c) => {
+      if (!c.contract_value) return s;
+      
+      // Se for parcelado, considera apenas o valor da parcela mensal no MRR
+      if (c.payment_type === 'parcelado' && c.installments > 1) {
+        return s + (c.contract_value / c.installments);
+      }
+      
+      // Se for "à vista" mas com datas de início e fim, amortiza o valor pelo número de meses
+      if (c.payment_type === 'avista' && c.contract_start && c.contract_end) {
+        const start = new Date(c.contract_start);
+        const end = new Date(c.contract_end);
+        // Calcula a diferença em meses (garantindo pelo menos 1 mês para evitar divisão por zero)
+        const months = Math.max(1, (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()));
+        return s + (c.contract_value / months);
+      }
+      
+      // Pagamentos à vista sem período definido não são contados como receita "recorrente"
+      return s; 
+    }, 0);
+}
+
+// Filtra clientes cujos contratos vencem nos próximos 'days' dias
+function getExpiringClients(days) {
+  return clients.filter(c => {
+    if (!c.contract_end || c.status !== 'ativo') return false;
+    const d = daysUntil(c.contract_end);
+    return d >= 0 && d <= days;
+  }).sort((a, b) => daysUntil(a.contract_end) - daysUntil(b.contract_end));
+}
+
+// Busca a meta definida para um mês específico (formato YYYY-MM)
+function getGoalMonth(ym) {
+  return goals.find(g => g.month === ym) || {
+    goal_new_clients: 0, goal_revenue: 0,
+    goal_renewals: 0, goal_referrals: 0
+  };
+}
+
+// Salva ou atualiza os dados de um cliente no banco de dados
+async function saveClient() {
+  const name = document.getElementById('cName').value.trim();
+  if (!name) { toast('Nome obrigatório', 'err'); return; }
+  
+  const payload = {
+    user_id: user.id,
+    name,
+    phone: document.getElementById('cPhone').value.trim() || null,
+    email: document.getElementById('cEmail').value.trim() || null,
+    niche: document.getElementById('cNiche').value,
+    contract_start: document.getElementById('cStart').value || null,
+    contract_end: document.getElementById('cEnd').value || null,
+    contract_value: parseFloat(document.getElementById('cValue').value) || null,
+    payment_type: document.getElementById('cPayType').value,
+    payment_method: document.getElementById('cPayMethod').value,
+    installments: parseInt(document.getElementById('cInstall').value) || 1,
+    status: document.getElementById('cStatus').value,
+    origin: document.getElementById('cOrigin').value,
+    notes: document.getElementById('cNotes').value.trim() || null
+  };
+  
+  const btn = document.getElementById('cSaveBtn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  let error;
+  
+  if (editingClientId) {
+    // Atualiza cliente existente
+    ({ error } = await sb.from('clients').update(payload).eq('id', editingClientId));
+    if (!error) clients = clients.map(c => c.id === editingClientId ? { ...c, ...payload, id: editingClientId } : c);
+  } else {
+    // Insere novo cliente
+    const { data, error: e } = await sb.from('clients').insert(payload).select().single();
+    error = e;
+    if (!error && data) clients.unshift(data);
+  }
+  
+  btn.disabled = false; btn.textContent = 'Salvar cliente';
+  if (error) { toast('Erro: ' + error.message, 'err'); return; }
+  
+  closeOv('clientOv');
+  editingClientId = null;
+  renderClients();
+  toast('Cliente salvo ✓', 'ok');
+}
+
+// Remove um cliente do banco de dados (pede confirmação)
+async function deleteClient(id) {
+  if (!confirm('Excluir este cliente?')) return;
+  const { error } = await sb.from('clients').delete().eq('id', id);
+  if (error) { toast('Erro ao excluir', 'err'); return; }
+  clients = clients.filter(c => c.id !== id);
+  renderClients();
+  toast('Excluído', 'ok');
+}
+
+// Prepara o modal para criação de um novo cliente (limpa os campos)
+function openNewClient() {
+  editingClientId = null;
+  ['cName','cPhone','cEmail','cValue','cNotes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cNiche').value = 'outros';
+  document.getElementById('cPayType').value = 'avista';
+  document.getElementById('cPayMethod').value = 'pix';
+  document.getElementById('cStatus').value = 'ativo';
+  document.getElementById('cOrigin').value = 'direto';
+  document.getElementById('cInstall').value = '1';
+  document.getElementById('cStart').value = '';
+  document.getElementById('cEnd').value = '';
+  document.getElementById('cInstallRow').style.display = 'none';
+  openOv('clientOv');
+}
+
+// Prepara o modal para edição de um cliente existente (preenche os campos)
+function openEditClient(id) {
+  const c = clients.find(x => x.id === id);
+  if (!c) return;
+  editingClientId = id;
+  document.getElementById('cName').value = c.name || '';
+  document.getElementById('cPhone').value = c.phone || '';
+  document.getElementById('cEmail').value = c.email || '';
+  document.getElementById('cNiche').value = c.niche || 'outros';
+  document.getElementById('cStart').value = c.contract_start || '';
+  document.getElementById('cEnd').value = c.contract_end || '';
+  document.getElementById('cValue').value = c.contract_value || '';
+  document.getElementById('cPayType').value = c.payment_type || 'avista';
+  document.getElementById('cPayMethod').value = c.payment_method || 'pix';
+  document.getElementById('cInstall').value = c.installments || 1;
+  document.getElementById('cStatus').value = c.status || 'ativo';
+  document.getElementById('cOrigin').value = c.origin || 'direto';
+  document.getElementById('cNotes').value = c.notes || '';
+  document.getElementById('cInstallRow').style.display = c.payment_type === 'parcelado' ? '' : 'none';
+  openOv('clientOv');
+}
+
+// Renderiza a lista de clientes com filtros e busca
+function renderClients() {
+  const search = document.getElementById('cSearch')?.value?.toLowerCase() || '';
+  const nicheF = document.getElementById('cNicheFilter')?.value || 'todos';
+  const originF = document.getElementById('cOriginFilter')?.value || 'todos';
+  
+  let list = clients;
+  if (clientFilter !== 'todos') list = list.filter(c => c.status === clientFilter);
+  if (nicheF !== 'todos') list = list.filter(c => c.niche === nicheF);
+  if (originF !== 'todos') list = list.filter(c => c.origin === originF);
+  
+  if (search) list = list.filter(c =>
+    c.name?.toLowerCase().includes(search) ||
+    c.phone?.includes(search) ||
+    c.niche?.toLowerCase().includes(search)
+  );
+
+  const niches = { dentista:'🦷', optica:'👓', imoveis:'🏠', turismo:'✈️', seguro:'🛡️', outros:'📦' };
+  const statusColor = { ativo:'var(--green)', inativo:'var(--text3)', renovando:'var(--yellow)' };
+  const statusLabel = { ativo:'Ativo', inativo:'Inativo', renovando:'Renovando' };
+  const payLabel = { avista:'À vista', parcelado:'Parcelado' };
+  const methodLabel = { pix:'PIX', credito:'Crédito', debito:'Débito', boleto:'Boleto' };
+
+  const ativos = clients.filter(c => c.status === 'ativo').length;
+  const expiring = getExpiringClients(45);
+  // Atualiza subtitulo com contador e MRR
+  document.getElementById('clientsSub').textContent = `${ativos} ativo${ativos !== 1 ? 's' : ''} · MRR ${brl(getMRR(), true)}`;
+
+  // Renderiza chips de filtro
+  const chips = [
+    { id:'todos', l:'Todos' }, { id:'ativo', l:'Ativos' },
+    { id:'renovando', l:'Renovando' }, { id:'inativo', l:'Inativos' }
+  ];
+  document.getElementById('clientChips').innerHTML = chips.map(c =>
+    `<button class="chip ${clientFilter === c.id ? 'on' : ''}" onclick="clientFilter='${c.id}';renderClients()">${c.l}</button>`
+  ).join('');
+
+  // Renderiza alertas de vencimento se houver
+  const alertBox = document.getElementById('clientAlerts');
+  if (expiring.length) {
+    alertBox.innerHTML = '<div style="padding:.15rem 1.1rem .1rem"><span style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em">⚠ Contratos vencendo</span></div>'
+      + '<div style="display:flex;flex-direction:column;gap:.32rem;padding:0 1.1rem .5rem">'
+      + expiring.map(c => {
+        const d = daysUntil(c.contract_end);
+        const col = d <= 7 ? 'var(--red)' : d <= 15 ? 'var(--orange)' : 'var(--yellow)';
+        const urg = d <= 7 ? 'u3' : d <= 15 ? 'u10' : 'u30';
+        const dot = d <= 7 ? 'r' : d <= 15 ? 'o' : 'y';
+        return `<div class="alert-item ${urg}">
+          <div class="adot ${dot}"></div>
+          <div class="alert-body" onclick="openEditClient('${c.id}')">
+            <div class="alert-desc">${niches[c.niche] || '📦'} ${c.name}</div>
+            <div class="alert-meta">${c.contract_value ? brl(c.contract_value, true) : '—'} · vence ${fDateFull(c.contract_end)}</div>
+          </div>
+          <div style="display:flex;gap:.4rem;align-items:center">
+             ${c.phone ? `<button onclick="openWa(${JSON.stringify(c).replace(/"/g,'&quot;')})" style="background:none;border:none;color:var(--green);font-size:1.1rem;padding:.2rem">💬</button>` : ''}
+             <div class="alert-days" style="color:${col}" onclick="openEditClient('${c.id}')">${d === 0 ? 'hoje' : d === 1 ? 'amanhã' : d + 'd'}</div>
+          </div>
+        </div>`;
+      }).join('') + '</div>';
+    alertBox.style.display = '';
+  } else {
+    alertBox.innerHTML = '';
+    alertBox.style.display = 'none';
+  }
+
+  // Renderiza a lista principal de clientes
+  const el = document.getElementById('clientList');
+  const emptyEl = document.getElementById('clientEmpty');
+  if (!list.length) {
+    el.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+  emptyEl.classList.add('hidden');
+  el.innerHTML = list.map(c => {
+    const d = c.contract_end ? daysUntil(c.contract_end) : null;
+    const showDue = d !== null && d >= 0 && d <= 45 && c.status === 'ativo';
+    const dueCol = d <= 7 ? 'var(--red)' : d <= 15 ? 'var(--orange)' : 'var(--yellow)';
+    
+    // Cálculo de LTV: Soma de todas as receitas onde a descrição contém o nome do cliente
+    const clientEntries = entries.filter(e => 
+      e.type === 'receita' && 
+      e.description?.toLowerCase().includes(c.name?.toLowerCase())
+    );
+    const ltv = sum(clientEntries) + (c.status === 'ativo' ? (c.contract_value || 0) : 0); 
+
+    return `<div class="entry-item">
+      <div class="e-icon" onclick="openEditClient('${c.id}')" style="background:var(--bg2);font-size:1.1rem">${niches[c.niche] || '📦'}</div>
+      <div class="e-body" onclick="openEditClient('${c.id}')">
+        <div class="e-desc">${c.name}</div>
+        <div class="e-meta">
+          <span class="e-badge" style="background:${statusColor[c.status]}18;color:${statusColor[c.status]}">${statusLabel[c.status]}</span>
+          <span class="e-badge" style="background:var(--bg3);color:var(--text3)">${fDate(c.contract_start)}</span>
+          ${showDue ? `<span class="e-badge" style="background:${dueCol}18;color:${dueCol}">⏰ ${d}d</span>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div style="display:flex;flex-direction:column;gap:.25rem">
+           ${c.phone ? `<button onclick='openWa(${JSON.stringify(c).replace(/"/g,"&quot;")})' style="background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:.2rem .35rem;font-size:.9rem">💬</button>` : ''}
+           ${c.email ? `<button onclick='openMail(${JSON.stringify(c).replace(/"/g,"&quot;")})' style="background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:.2rem .35rem;font-size:.7rem">✉</button>` : ''}
+        </div>
+        <div class="e-right" onclick="openEditClient('${c.id}')">
+          <div class="e-amt" style="color:var(--green)">${c.contract_value ? brl(c.contract_value, true) : '—'}</div>
+          <div class="e-recur" style="color:var(--text3)">LTV ${brl(ltv, true)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Salva ou atualiza as metas do mês atual no banco de dados
+async function saveGoal() {
+  const ym = curMonth;
+  const existing = goals.find(g => g.month === ym && g.user_id === user.id);
+  const payload = {
+    user_id: user.id, month: ym,
+    goal_new_clients: parseInt(document.getElementById('gClients').value) || 0,
+    goal_revenue: parseFloat(document.getElementById('gRevenue').value) || 0,
+    goal_renewals: parseInt(document.getElementById('gRenewals').value) || 0,
+    goal_referrals: parseInt(document.getElementById('gReferrals').value) || 0
+  };
+  
+  const btn = document.getElementById('gSaveBtn');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  let error;
+  
+  if (existing) {
+    // Atualiza meta existente
+    ({ error } = await sb.from('goals').update(payload).eq('id', existing.id));
+    if (!error) goals = goals.map(g => g.id === existing.id ? { ...g, ...payload } : g);
+  } else {
+    // Insere nova meta
+    const { data, error: e } = await sb.from('goals').insert(payload).select().single();
+    error = e;
+    if (!error && data) goals.push(data);
+  }
+  
+  btn.disabled = false; btn.textContent = 'Salvar metas';
+  if (error) { toast('Erro: ' + error.message, 'err'); return; }
+  
+  closeOv('goalOv');
+  renderGoals();
+  toast('Metas salvas ✓', 'ok');
+}
+
+// Renderiza o painel de acompanhamento de metas
+function renderGoals() {
+  const ym = curMonth;
+  const goal = getGoalMonth(ym);
+  const me = mEntries(ym);
+  const rec = sum(me.filter(e => e.type === 'receita'));
+  const newCli = clients.filter(c => c.created_at?.startsWith(ym)).length;
+  const renewals = clients.filter(c => c.status === 'renovando').length;
+  const referrals = clients.filter(c => c.origin === 'indicacao' && c.created_at?.startsWith(ym)).length;
+
+  document.getElementById('goalsMth').textContent = mLabel(ym);
+
+  // Define os itens de progresso para exibir
+  const items = [
+    { icon:'💰', label:'Receita', current: rec, goal: goal.goal_revenue, fmt: v => brl(v, true) },
+    { icon:'👥', label:'Clientes novos', current: newCli, goal: goal.goal_new_clients, fmt: v => v },
+    { icon:'🔄', label:'Renovações', current: renewals, goal: goal.goal_renewals, fmt: v => v },
+    { icon:'🤝', label:'Indicações', current: referrals, goal: goal.goal_referrals, fmt: v => v }
+  ];
+
+  document.getElementById('goalsList').innerHTML = items.map(item => {
+    // Calcula porcentagem de atingimento da meta
+    const pct = item.goal > 0 ? Math.min((item.current / item.goal) * 100, 100) : 0;
+    // Define a cor baseada no progresso (verde se 100%, amarelo >50%, vermelho abaixo)
+    const color = pct >= 100 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+    
+    return `<div style="background:var(--bg1);border:1px solid var(--line);border-radius:var(--r-sm);padding:.9rem 1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <span style="font-size:.82rem;font-weight:500">${item.icon} ${item.label}</span>
+        <span style="font-size:.72rem;font-family:var(--mono);color:${color};font-weight:600">${item.fmt(item.current)} / ${item.fmt(item.goal)}</span>
+      </div>
+      <div style="height:4px;background:var(--bg3);border-radius:999px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:999px;transition:width .6s ease"></div>
+      </div>
+      <div style="font-size:.6rem;color:var(--text3);font-family:var(--mono);margin-top:.3rem;text-align:right">${pct.toFixed(0)}% atingido</div>
+    </div>`;
+  }).join('');
+
+  // Sincroniza os inputs do modal com os valores atuais da meta
+  document.getElementById('gRevenue').value = goal.goal_revenue || '';
+  document.getElementById('gClients').value = goal.goal_new_clients || '';
+  document.getElementById('gRenewals').value = goal.goal_renewals || '';
+  document.getElementById('gReferrals').value = goal.goal_referrals || '';
 }
 function recalcImpostosProlab(me){
   const rec=sum(me.filter(e=>e.type==='receita'));
@@ -676,19 +1219,23 @@ function renderHome(){
   const varDesp=sum(me.filter(e=>e.type==='despesa'&&CMAP[e.category]?.group==='var'));
   const metaVal=rec*getMeta()/100;
   const onTarget=saldo>=metaVal;
+  
+  const goal = getGoalMonth(curMonth);
+  const revPct = goal.goal_revenue > 0 ? Math.min((rec / goal.goal_revenue) * 100, 100) : 0;
+
   document.getElementById('sumGrid').innerHTML=
     '<div class="sum-card">'
-    +'<div class="sum-lbl">Despesas fixas</div>'
+    +'<div class="sum-lbl">Meta de Receita</div>'
+    +'<div class="sum-val" style="color:'+(revPct>=100?'var(--green)':'var(--text)')+'">'+brl(rec,true)+' / '+brl(goal.goal_revenue,true)+'</div>'
+    +'<div style="height:3px;background:var(--bg3);border-radius:99px;margin-top:.4rem;overflow:hidden"><div style="height:100%;width:'+revPct+'%;background:var(--accent)"></div></div>'
+    +'</div>'
+    +'<div class="sum-card">'
+    +'<div class="sum-lbl">Despesas Fixas</div>'
     +'<div class="sum-val" style="color:var(--orange)">'+brl(fixas,true)+'</div>'
-    +'<div class="sum-sub">operação parada</div>'
+    +'<div class="sum-sub">custo operacional</div>'
     +'</div>'
     +'<div class="sum-card">'
-    +'<div class="sum-lbl">Despesas variáveis</div>'
-    +'<div class="sum-val" style="color:var(--yellow)">'+brl(varDesp,true)+'</div>'
-    +'<div class="sum-sub">comissão, ferramentas...</div>'
-    +'</div>'
-    +'<div class="sum-card">'
-    +'<div class="sum-lbl">Meta '+getMeta()+'%</div>'
+    +'<div class="sum-lbl">Margem '+getMeta()+'%</div>'
     +'<div class="sum-val" style="color:'+(onTarget?'var(--green)':'var(--red)')+'">'+( onTarget?'✓ atingida':'✗ abaixo')+'</div>'
     +'<div class="sum-sub">meta: '+brl(metaVal,true)+'</div>'
     +'</div>'
@@ -1011,6 +1558,8 @@ function goTo(sid){
   if(sid==='homeScreen')renderHome();
   if(sid==='listScreen')renderList();
   if(sid==='analyticsScreen')renderAnalytics();
+  if(sid==='clientsScreen')renderClients();
+  if(sid==='goalsScreen')renderGoals();
   if(sid==='profileScreen')renderProfile();
 }
 function refreshActive(){
@@ -1018,6 +1567,8 @@ function refreshActive(){
   if(sid==='homeScreen')renderHome();
   if(sid==='listScreen')renderList();
   if(sid==='analyticsScreen')renderAnalytics();
+  if(sid==='clientsScreen')renderClients();
+  if(sid==='goalsScreen')renderGoals();
 }
 function showRaw(sid){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1061,7 +1612,9 @@ function toast(msg,type=''){
 buildCatGrid();
 sb.auth.onAuthStateChange(async(event,session)=>{
   if(session?.user){
-    user=session.user;await loadEntries();
+    user=session.user;
+    await ensureSchema();
+    await Promise.all([loadEntries(), loadClients(), loadGoals()]);
     document.getElementById('bottomNav').style.display='';
     document.getElementById('fab').style.display='flex';
     goTo('homeScreen');
@@ -1070,7 +1623,9 @@ sb.auth.onAuthStateChange(async(event,session)=>{
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
   if(session?.user){
-    user=session.user;await loadEntries();
+    user=session.user;
+    await ensureSchema();
+    await Promise.all([loadEntries(), loadClients(), loadGoals()]);
     document.getElementById('bottomNav').style.display='';
     document.getElementById('fab').style.display='flex';
     goTo('homeScreen');
