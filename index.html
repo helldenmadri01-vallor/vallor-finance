@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0a0a">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Vallor">
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Vallor Finance&quot;,&quot;short_name&quot;:&quot;Vallor&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%230a0a0a&quot;,&quot;theme_color&quot;:&quot;%230a0a0a&quot;}">
 <title>Vallor Finance</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,10 +24,13 @@
   --r:12px;--r-sm:8px;--nav:64px;--safe:env(safe-area-inset-bottom,0px);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;font-size:15px;overflow:hidden}
-body{display:flex;justify-content:center}
-.app-shell{position:relative;width:100%;max-width:480px;height:100%;overflow:hidden;flex-shrink:0}
-@media(min-width:481px){body{background:#050508;align-items:center}.app-shell{border-left:1px solid var(--line);border-right:1px solid var(--line);box-shadow:0 0 80px rgba(0,0,0,.7)}}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;font-size:15px}
+body{display:flex;justify-content:center;overflow:hidden}
+.app-shell{position:relative;width:100%;max-width:480px;height:100vh;overflow:hidden;flex-shrink:0}
+@media(min-width:481px){
+  body{background:#050508;align-items:stretch}
+  .app-shell{border-left:1px solid var(--line);border-right:1px solid var(--line)}
+}
 .screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
 .screen.active{display:flex}
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:calc(var(--nav) + var(--safe) + 1rem)}
